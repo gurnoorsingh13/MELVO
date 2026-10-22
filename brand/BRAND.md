@@ -114,6 +114,15 @@ Coordinates are in `tokens.json` under `mark`. Transitions between shapes use `c
 
 Short, direct, confident, warm. Verbs before nouns. Specifics over buzzwords.
 
+### Key lines
+
+| Where | Line |
+|---|---|
+| Website hero (melvo.in) | **Thought of it? Let's build it.** |
+| Hero supporting text | We teach the skills, shape the brand, open the store and write the software. One team, from first idea to full scale. |
+| melvo.fun | Learn by building. |
+| Backup / closing line | Nothing stays on paper. |
+
 - Yes: "We took 800 products to Amazon in 8 weeks."
 - No: "End-to-end e-commerce solutions."
 
