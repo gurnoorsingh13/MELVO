@@ -1,0 +1,34 @@
+/* MELVO brand tokens, v1.0 */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wdth,wght@75..112.5,300..700&family=Newsreader:ital,opsz,wght@1,6..72,300..600&display=swap");
+
+:root {
+  /* Core colour */
+  --melvo-paper: #EEF0EA;   /* main background, ~60% */
+  --melvo-ink: #0B1A16;     /* text and dark sections, ~25% */
+  --melvo-green: #0B4A44;   /* Bottle Green: primary, ~10% */
+  --melvo-firozi: #22C4CF;  /* Stone Firozi: accent, ~5% */
+  --melvo-haldi: #E9AE36;   /* warm accent: melvo.fun and small tags only */
+
+  /* Supporting neutrals */
+  --melvo-paper-2: #E3E7DF;
+  --melvo-muted: #4A5A55;       /* secondary text on Paper */
+  --melvo-muted-dark: #9DB0A9;  /* secondary text on Ink / Green */
+  --melvo-line: rgba(11, 26, 22, .16);
+  --melvo-line-dark: rgba(238, 240, 234, .14);
+
+  /* Type */
+  --melvo-font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --melvo-font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --melvo-font-mono: "Martian Mono", ui-monospace, Menlo, monospace;
+
+  /* Archivo width axis */
+  --melvo-width-hero: 125%;
+  --melvo-width-heading: 112%;
+  --melvo-width-body: 100%;
+  --melvo-width-mobile-display: 108%;
+
+  /* Display tracking and leading */
+  --melvo-tracking-display: -0.035em;
+  --melvo-leading-display: 0.92;
+  --melvo-tracking-label: 0.08em;
+}
