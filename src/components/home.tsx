@@ -2,32 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, prefersReducedMotion } from "@/lib/gsap";
-import { CAPABILITIES, FAQ, INTRO_STATEMENT, PROCESS, SITE, WAYS_TO_START, type Capability } from "@/lib/content";
+import { AUDIENCE, CAPABILITIES, PROCESS, SITE, STATEMENT, WAYS_TO_START, type Capability } from "@/lib/content";
 import type { ShapeName } from "@/lib/shapes";
 import { Mark } from "./Mark";
-import { Magnetic, Reveal, ScrubText } from "./motion";
+import { Mark3D } from "./Mark3D";
+import { Lines, Reveal, RotatingWords, ScrubText, ShapeTrail } from "./motion";
 import { useSite } from "./providers";
 import { TransitionLink } from "./TransitionLink";
 
 /* ---------------- Hero ---------------- */
 
-const HERO_CYCLE: ShapeName[] = ["learn", "brand", "sell", "scale", "m"];
+const HERO_SHAPES: ShapeName[] = ["m", "learn", "brand", "sell", "scale"];
 
 export function Hero() {
+  const root = useRef<HTMLElement>(null);
   const { ready } = useSite();
   const [shape, setShape] = useState<ShapeName>("m");
-  const [key, setKey] = useState("Learn · Brand · Sell · Scale");
-  const root = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!ready || prefersReducedMotion()) return;
     let i = 0;
-    const names = ["01 / Learn", "02 / Brand", "03 / Sell", "04 / Scale", "Learn · Brand · Sell · Scale"];
     const id = window.setInterval(() => {
-      setShape(HERO_CYCLE[i % HERO_CYCLE.length]);
-      setKey(names[i % names.length]);
-      i++;
-    }, 2200);
+      i = (i + 1) % HERO_SHAPES.length;
+      setShape(HERO_SHAPES[i]);
+    }, 2600);
     return () => window.clearInterval(id);
   }, [ready]);
 
@@ -35,259 +33,248 @@ export function Hero() {
     const el = root.current;
     if (!el || prefersReducedMotion()) return;
     const ctx = gsap.context(() => {
-      gsap.to(".headline", { yPercent: -18, ease: "none", scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true } });
+      gsap.from(".hero-object", { scale: 0.6, autoAlpha: 0, duration: 1.6, ease: "melvo", delay: 0.1 });
+      const tl = gsap.timeline({ scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true } });
+      tl.to(".hero-object", { yPercent: -18, scale: 1.12, ease: "none" }, 0).to(".hero-copy", { yPercent: -40, autoAlpha: 0.2, ease: "none" }, 0);
     }, el);
     return () => ctx.revert();
   }, []);
 
-  useEffect(() => {
-    const el = root.current;
-    if (!el || !ready || prefersReducedMotion()) return;
-    const ctx = gsap.context(() => {
-      gsap.fromTo(".fade-in", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1.2, stagger: 0.08, ease: "expo.out", delay: 0.6 });
-    }, el);
-    return () => ctx.revert();
-  }, [ready]);
-
   return (
-    <section className="hero container" ref={root}>
-      <div className="meta">
-        <span className="label muted fade-in">Education × Commerce × Creativity × Technology</span>
-        <span className="label muted fade-in">melvo.in</span>
+    <section className="hero" ref={root} data-theme-section="dark">
+      <div className="hero-object">
+        <Mark3D shape={shape} tone="paper" />
       </div>
-      <div className="headline">
-        <Reveal as="h1" className="t-hero" trigger="ready" delay={0.1}>
-          {SITE.hero.line1}
-          <br />
-          {SITE.hero.line2a} <span className="em">{SITE.hero.line2em}</span> {SITE.hero.line2b}
-          <span className="dot" />
+      <div className="hero-copy page">
+        <Lines as="h1" className="t-giant" trigger="ready" delay={0.25}>
+          Hello<span className="dot" />
+        </Lines>
+        <Reveal trigger="ready" delay={0.6}>
+          <p className="t-h4 hero-sub">
+            Thought of it? Let&apos;s build it. We teach the skills, shape the brand, open the store and write the software.
+          </p>
         </Reveal>
       </div>
-      <div className="bottom">
-        <div className="fade-in">
-          <p className="sub">{SITE.heroSub}</p>
-          <div className="actions">
-            <Magnetic>
-              <TransitionLink href="/contact" className="btn">
-                Start a project <span className="arrow">→</span>
-              </TransitionLink>
-            </Magnetic>
-            <Magnetic>
-              <a href={SITE.funUrl} target="_blank" rel="noopener" className="btn btn--ghost">
-                Learn on melvo.fun <span className="arrow">↗</span>
-              </a>
-            </Magnetic>
-          </div>
+    </section>
+  );
+}
+
+/* ---------------- Statement ---------------- */
+
+const STATEMENT_LINKS = [
+  { href: "#capabilities", label: "See what we do." },
+  { href: "#process", label: "Check our approach." },
+  { href: SITE.funUrl, label: "Learn on melvo.fun.", ext: true },
+  { href: "/about", label: "This is MELVO." },
+  { href: "/contact", label: "Start a project." },
+];
+
+export function Statement() {
+  const { lenis } = useSite();
+  const jump = (id: string) => {
+    const t = document.querySelector<HTMLElement>(id);
+    if (!t) return;
+    lenis.current ? lenis.current.scrollTo(t, { offset: -40, duration: 1.6 }) : t.scrollIntoView({ behavior: "smooth" });
+  };
+  return (
+    <section className="statement" data-theme-section="white">
+      <ShapeTrail className="page">
+        <Reveal>
+          <h2 className="t-display statement-title">
+            {STATEMENT.lead} <RotatingWords words={STATEMENT.words} className="accent" />
+          </h2>
+        </Reveal>
+        <div className="statement-body">
+          <ScrubText className="t-h3">{STATEMENT.body}</ScrubText>
+          <Reveal as="ul" className="arrow-links" stagger={0.06}>
+            {STATEMENT_LINKS.map((l) => (
+              <li key={l.label}>
+                {l.ext ? (
+                  <a href={l.href} target="_blank" rel="noopener" className="arrow-link">
+                    {l.label} <span className="arr">↗</span>
+                  </a>
+                ) : l.href.startsWith("#") ? (
+                  <a
+                    href={l.href}
+                    className="arrow-link"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      jump(l.href);
+                    }}
+                  >
+                    {l.label} <span className="arr">→</span>
+                  </a>
+                ) : (
+                  <TransitionLink href={l.href} className="arrow-link">
+                    {l.label} <span className="arr">→</span>
+                  </TransitionLink>
+                )}
+              </li>
+            ))}
+          </Reveal>
         </div>
-        <a href="#intro" className="scroll fade-in" onClick={(e) => { e.preventDefault(); document.getElementById("intro")?.scrollIntoView({ behavior: "smooth" }); }}>
-          <span className="track" />
-          <span className="label muted">Scroll</span>
-        </a>
-        <div className="mark-wrap fade-in">
-          <Mark shape={shape} title="MELVO mark" />
-          <span className="label muted">{key}</span>
+      </ShapeTrail>
+    </section>
+  );
+}
+
+/* ---------------- Audience wall ---------------- */
+
+export function AudienceWall() {
+  const cells = 8;
+  const [shown, setShown] = useState(() => AUDIENCE.slice(0, cells));
+  const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = root.current;
+    if (!el || prefersReducedMotion()) return;
+    let pool = AUDIENCE.slice(cells);
+    let last = -1;
+    let visible = false;
+    const st = ScrollTrigger.create({ trigger: el, start: "top bottom", end: "bottom top", onToggle: (s) => (visible = s.isActive) });
+    const id = window.setInterval(() => {
+      if (!visible || document.hidden) return;
+      let slot = Math.floor(Math.random() * cells);
+      if (slot === last) slot = (slot + 1) % cells;
+      last = slot;
+      const word = el.querySelectorAll<HTMLElement>(".aw-word")[slot];
+      if (!word) return;
+      gsap.to(word, {
+        yPercent: -60,
+        autoAlpha: 0,
+        filter: "blur(6px)",
+        duration: 0.45,
+        ease: "power3.in",
+        onComplete: () => {
+          setShown((prev) => {
+            const next = [...prev];
+            const incoming = pool[0];
+            pool = [...pool.slice(1), prev[slot]];
+            next[slot] = incoming;
+            return next;
+          });
+          gsap.fromTo(word, { yPercent: 60, autoAlpha: 0, filter: "blur(6px)" }, { yPercent: 0, autoAlpha: 1, filter: "blur(0px)", duration: 0.7, ease: "power3.out" });
+        },
+      });
+    }, 1400);
+    return () => {
+      window.clearInterval(id);
+      st.kill();
+    };
+  }, []);
+
+  return (
+    <section className="audience" data-theme-section="white" aria-label="Who we work with">
+      <div className="page">
+        <Reveal className="aw-head">
+          <span className="t-small muted">Built for</span>
+          <span className="t-small muted">Students to enterprises</span>
+        </Reveal>
+        <div ref={root}>
+          <Reveal className="aw-grid" stagger={0.05}>
+            {shown.map((w, i) => (
+              <div className="aw-cell" key={i}>
+                <span className="aw-word">{w}</span>
+              </div>
+            ))}
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
-/* ---------------- Intro ---------------- */
+/* ---------------- Capability rail (pinned, horizontal) ---------------- */
 
-export function Intro() {
+function CapScene({ cap }: { cap: Capability }) {
   return (
-    <section className="section intro container" id="intro">
-      <div className="meta">
-        <span className="dot" style={{ fontSize: 48, margin: 0 }} />
-        <span className="label muted">Why MELVO</span>
+    <div className={`scene scene--${cap.slug}`} aria-hidden="true">
+      <div className="scene-grid" />
+      <div className="scene-object">
+        <Mark3D shape={cap.shape} tone={cap.slug === "brand" || cap.slug === "scale" ? "green" : "paper"} layers={16} follow={false} />
       </div>
-      <ScrubText className="t-statement">{INTRO_STATEMENT}</ScrubText>
-    </section>
-  );
-}
-
-/* ---------------- Vignettes ---------------- */
-
-export function Vignette({ cap }: { cap: Capability }) {
-  return (
-    <div className="scene" aria-hidden="true">
-      <div className="grid-bg" />
-      <span className="tag label">{cap.index} / {cap.verb}</span>
-      <Mark shape={cap.shape} tone="dark" className="shape" />
       {cap.vignette === "course" && (
         <div className="vcard">
-          <span className="label">melvo.fun · Robotics 101</span>
+          <span className="t-small">melvo.fun · Robotics 101</span>
           <b>Module 4 of 6: Sensors</b>
           <div className="steps">{[1, 1, 1, 1, 0, 0].map((on, i) => <i key={i} className={on ? "on" : ""} />)}</div>
-          <div className="meter"><i /></div>
-          <span className="label">Next: build the line follower</span>
+          <span className="t-small muted">Next: build the line follower</span>
         </div>
       )}
       {cap.vignette === "identity" && (
         <div className="vcard">
-          <span className="label">Identity system · v1</span>
-          <span className="brandword">YOUR BRAND</span>
-          <div className="chips"><i style={{ background: "#E9AE36" }} /><i style={{ background: "#1E2A38" }} /><i style={{ background: "#F7F3EA", outline: "1px solid rgba(0,0,0,.1)" }} /></div>
-          <span className="label">Logo · Colour · Type · Voice</span>
+          <span className="t-small">Identity system · v1</span>
+          <b className="brandword">Your brand.</b>
+          <div className="chips">
+            <i style={{ background: "#E9AE36" }} />
+            <i style={{ background: "#1E2A38" }} />
+            <i style={{ background: "#F7F3EA" }} />
+          </div>
+          <span className="t-small muted">Logo · Colour · Type · Voice</span>
         </div>
       )}
       {cap.vignette === "listing" && (
         <div className="vcard">
-          <span className="label">Marketplace listing · A+ content</span>
-          <b>Your product, photographed and listed</b>
-          <span className="stars">★★★★★</span>
+          <span className="t-small">Marketplace listing</span>
+          <b>Your product, shot and listed</b>
           <span className="price">₹1,499</span>
           <span className="buy">Add to cart</span>
         </div>
       )}
       {cap.vignette === "dashboard" && (
         <div className="vcard">
-          <span className="label">Operations · this week</span>
-          <b>Orders <span className="up">▲ live</span></b>
+          <span className="t-small">Operations · this week</span>
+          <b>Orders</b>
           <div className="bars">{[30, 44, 38, 56, 52, 70, 76, 100].map((h, i) => <i key={i} style={{ height: `${h}%` }} />)}</div>
-          <span className="label">Stock synced · automated</span>
+          <span className="t-small muted">Stock synced · automated</span>
         </div>
       )}
     </div>
   );
 }
 
-/* ---------------- Pinned capabilities ---------------- */
-
-export function Capabilities() {
+export function CapabilityRail({ title = "What we do." }: { title?: string }) {
   const root = useRef<HTMLElement>(null);
-  const st = useRef<ScrollTrigger | null>(null);
-  const [active, setActive] = useState(0);
-  const { lenis } = useSite();
 
   useEffect(() => {
     const el = root.current!;
     const mm = gsap.matchMedia();
     mm.add("(min-width: 1000px) and (prefers-reduced-motion: no-preference)", () => {
-      el.classList.add("is-pinned");
-      const caps = gsap.utils.toArray<HTMLElement>(".cap", el);
-      const bars = gsap.utils.toArray<HTMLElement>(".progress .bar i", el);
-      gsap.set(caps.slice(1), { autoAlpha: 0 });
-      const tl = gsap.timeline({
-        defaults: { ease: "none" },
-        scrollTrigger: {
-          trigger: el,
-          start: "top top",
-          end: () => `+=${window.innerHeight * 3.2}`,
-          pin: ".pin",
-          scrub: 0.6,
-          onUpdate: (self) => setActive(Math.min(3, Math.floor(self.progress * 4))),
-        },
-      });
-      st.current = tl.scrollTrigger ?? null;
-      caps.forEach((c, i) => {
-        tl.to(bars[i], { scaleX: 1, duration: 1 }, i);
-        if (i === 0) return;
-        const prev = caps[i - 1];
-        tl.to(prev.querySelectorAll(".text > *"), { y: -60, autoAlpha: 0, stagger: 0.03, duration: 0.3 }, i - 0.15)
-          .to(prev.querySelector(".scene"), { clipPath: "inset(0 0 100% 0)", duration: 0.35 }, i - 0.15)
-          .set(prev, { autoAlpha: 0 }, i + 0.2)
-          .set(c, { autoAlpha: 1 }, i - 0.15)
-          .fromTo(c.querySelectorAll(".text > *"), { y: 80, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.03, duration: 0.3 }, i)
-          .fromTo(c.querySelector(".scene"), { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.35 }, i - 0.05);
-      });
-      return () => {
-        el.classList.remove("is-pinned");
-        st.current = null;
-      };
-    });
-    return () => mm.revert();
-  }, []);
-
-  const jump = (i: number) => {
-    const s = st.current;
-    if (!s) return;
-    const y = s.start + (s.end - s.start) * (i / 4) + 2;
-    lenis.current ? lenis.current.scrollTo(y, { duration: 1.4 }) : window.scrollTo({ top: y, behavior: "smooth" });
-  };
-
-  return (
-    <section className="caps is-dark" ref={root} data-header="dark" aria-label="Capabilities">
-      <div className="pin container">
-        <div className="top">
-          <div>
-            <span className="label muted">What we do</span>
-            <Reveal as="h2" className="t-h2">
-              Four capabilities. <span className="em" style={{ color: "var(--firozi)" }}>One system.</span>
-            </Reveal>
-          </div>
-          <div className="progress" role="tablist" aria-label="Capabilities">
-            {CAPABILITIES.map((c, i) => (
-              <button key={c.slug} type="button" role="tab" aria-selected={active === i} className={active === i ? "on" : ""} onClick={() => jump(i)}>
-                <span className="bar"><i /></span>
-                <span className="label">{c.verb}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="stage">
-          {CAPABILITIES.map((c) => (
-            <article className="cap" key={c.slug}>
-              <div className="text">
-                <span className="label muted">{c.index} / {c.name}</span>
-                <h3 className="verb">{c.verb}</h3>
-                <p className="name">{c.headline} {c.headlineEm}</p>
-                <p>{c.summary}</p>
-                <div className="services">{c.services.slice(0, 5).map((s) => <span key={s.title}>{s.title}</span>)}</div>
-                <TransitionLink href={`/${c.slug}`} className="btn btn--light go" data-cursor="Explore">
-                  Explore {c.verb} <span className="arrow">→</span>
-                </TransitionLink>
-              </div>
-              <Vignette cap={c} />
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Ways to start (horizontal) ---------------- */
-
-export function Ways() {
-  const root = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const el = root.current!;
-    const mm = gsap.matchMedia();
-    mm.add("(min-width: 1000px) and (prefers-reduced-motion: no-preference)", () => {
-      const track = el.querySelector<HTMLElement>(".track")!;
-      const pin = el.querySelector<HTMLElement>(".ways-pin")!;
-      const dist = () => track.scrollWidth - track.clientWidth;
-      gsap.to(track, {
+      const track = el.querySelector<HTMLElement>(".rail-track")!;
+      const pin = el.querySelector<HTMLElement>(".rail-pin")!;
+      const dist = () => track.scrollWidth - window.innerWidth;
+      const tween = gsap.to(track, {
         x: () => -dist(),
         ease: "none",
-        scrollTrigger: { trigger: pin, start: "top top", end: () => `+=${dist()}`, pin, scrub: 0.8, invalidateOnRefresh: true },
+        scrollTrigger: { trigger: pin, start: "top top", end: () => `+=${dist()}`, pin, scrub: 0.6, invalidateOnRefresh: true },
+      });
+      // Each card's copy drifts slightly slower than the card for depth.
+      gsap.utils.toArray<HTMLElement>(".rail-card", el).forEach((card) => {
+        gsap.fromTo(
+          card.querySelector(".scene-object"),
+          { xPercent: 18 },
+          { xPercent: -18, ease: "none", scrollTrigger: { trigger: card, containerAnimation: tween, start: "left right", end: "right left", scrub: true } },
+        );
       });
     });
     return () => mm.revert();
   }, []);
+
   return (
-    <section className="ways" ref={root} aria-label="Ways to start">
-      <div className="container ways-pin">
-        <div className="head">
-          <div>
-            <span className="label muted">Ways to start</span>
-            <Reveal as="h2" className="t-display">
-              Start <span className="em" style={{ color: "var(--green)" }}>small.</span> Grow from there.
-            </Reveal>
-          </div>
-          <p className="t-lead muted" style={{ maxWidth: "30ch" }}>Pick one way in. Everything else connects when you need it.</p>
-        </div>
-        <div className="track">
-          {WAYS_TO_START.map((w, i) => (
-            <TransitionLink href="/contact" className="way" key={w.title} data-cursor="Start">
-              <div className="row">
-                <span className="label muted">{w.verb}</span>
-                <span className="label muted">{w.time}</span>
+    <section className="rail" id="capabilities" ref={root} data-theme-section="dark" aria-label="Capabilities">
+      <div className="rail-pin">
+        <Lines as="h2" className="t-display-xl page rail-title">
+          {title}
+        </Lines>
+        <div className="rail-track">
+          {CAPABILITIES.map((c) => (
+            <TransitionLink href={`/${c.slug}`} className={`rail-card rail-card--${c.slug}`} key={c.slug}>
+              <CapScene cap={c} />
+              <div className="rail-copy">
+                <span className="t-small">{c.index} · {c.name}</span>
+                <h3 className="t-h2">{c.verb}.</h3>
+                <p className="t-h3 dim">{c.summary}</p>
               </div>
-              <span className="num">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="t-h3">{w.title}</h3>
-              <p className="muted">{w.text}</p>
             </TransitionLink>
           ))}
         </div>
@@ -296,147 +283,193 @@ export function Ways() {
   );
 }
 
-/* ---------------- Process (stacking) ---------------- */
+/* ---------------- Ways to start (radial arc) ---------------- */
 
-export function Process({ title = true }: { title?: boolean }) {
+export function WaysArc() {
   const root = useRef<HTMLElement>(null);
+
   useEffect(() => {
     const el = root.current!;
+    const list = el.querySelector<HTMLElement>(".arc-list")!;
+    const items = gsap.utils.toArray<HTMLElement>(".arc-item", el);
+    const layout = () => {
+      const r = parseFloat(getComputedStyle(list).getPropertyValue("--radius")) || 1400;
+      const w = items[0].offsetWidth;
+      const step = (((w + 28) / r) * 180) / Math.PI;
+      list.style.setProperty("--step", `${step}deg`);
+      return step;
+    };
+    let step = layout();
     const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      const cards = gsap.utils.toArray<HTMLElement>(".pcard", el);
-      cards.slice(0, -1).forEach((c, i) => {
-        gsap.to(c, {
-          scale: 0.94,
-          filter: "brightness(.9)",
+    mm.add("(min-width: 1000px) and (prefers-reduced-motion: no-preference)", () => {
+      gsap.fromTo(
+        list,
+        { rotate: step * 0.5 },
+        {
+          rotate: () => -step * (items.length - 1.5),
           ease: "none",
-          scrollTrigger: { trigger: cards[i + 1], start: "top bottom", end: "top 20%", scrub: true },
-        });
-      });
+          scrollTrigger: {
+            trigger: el,
+            pin: true,
+            start: "top top",
+            end: () => `+=${window.innerHeight * (items.length - 1) * 0.55}`,
+            scrub: 0.6,
+            invalidateOnRefresh: true,
+            onRefresh: () => {
+              step = layout();
+            },
+          },
+        },
+      );
     });
     return () => mm.revert();
   }, []);
+
   return (
-    <section className="section process container" ref={root} aria-label="How we work">
-      {title && (
-        <div className="sec-head">
-          <span className="label muted">How we work</span>
-          <Reveal as="h2" className="t-display">
-            One team. <span className="em" style={{ color: "var(--green)" }}>Four</span> steps.
+    <section className="arc" ref={root} data-theme-section="dark" aria-label="Ways to start">
+      <div className="page arc-intro">
+        <Lines as="h2" className="t-display-xl">
+          Start small.
+        </Lines>
+        <Reveal>
+          <p className="t-h3">Pick one way in. Everything else connects when you need it, without starting over.</p>
+        </Reveal>
+      </div>
+      <div className="arc-stage">
+        <ul className="arc-list">
+          {WAYS_TO_START.map((w, i) => (
+            <li className="arc-item" key={w.title} style={{ ["--i" as string]: i }}>
+              <TransitionLink href="/contact" className={`arc-card arc-card--${i % 4}`}>
+                <div className="arc-top">
+                  <span className="tag">{w.verb}</span>
+                  <span className="tag tag--ghost">{w.time}</span>
+                </div>
+                <Mark shape={(["learn", "learn", "brand", "sell", "scale", "m"] as ShapeName[])[i]} tone={i % 4 === 1 || i % 4 === 2 ? "light" : "dark"} className="arc-mark" />
+                <div>
+                  <h3 className="t-h3">{w.title}.</h3>
+                  <p>{w.text}</p>
+                </div>
+              </TransitionLink>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Stacking cards ---------------- */
+
+type StackItem = { title: string; text: string };
+
+export function StackCards({ id, heading, intro, items }: { id?: string; heading: string; intro: string; items: StackItem[] }) {
+  const root = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = root.current!;
+    if (prefersReducedMotion()) return;
+    const cards = gsap.utils.toArray<HTMLElement>(".stack-item", el);
+    const triggers = cards.map((li, i) => {
+      const card = li.querySelector<HTMLElement>(".stack-card")!;
+      return ScrollTrigger.create({
+        trigger: li,
+        start: () => `top ${(parseFloat(getComputedStyle(li).top) || 0) + 1}px`,
+        invalidateOnRefresh: true,
+        onEnter: () => {
+          if (i === 0) return;
+          const w = card.offsetWidth;
+          const h = card.offsetHeight;
+          gsap
+            .timeline()
+            .to(card, { scaleX: (w + 24) / w, scaleY: (h - 8) / h, duration: 0.1, ease: "power1.out" })
+            .to(card, { scaleX: 1, scaleY: 1, duration: 1, ease: "elastic.out(1, 0.4)" });
+        },
+      });
+    });
+    return () => triggers.forEach((t) => t.kill());
+  }, []);
+
+  return (
+    <section className="stack" id={id} ref={root} data-theme-section="dark" aria-label={heading}>
+      <div className="page stack-flow" style={{ ["--count" as string]: items.length }}>
+        <div className="stack-intro">
+          <Lines as="h2" className="t-display-xl">
+            {heading}
+          </Lines>
+          <Reveal>
+            <p className="t-h3">{intro}</p>
           </Reveal>
         </div>
-      )}
-      <div className="stack">
-        {PROCESS.map((p, i) => (
-          <article className="pcard" key={p.title} style={{ zIndex: i + 1 }}>
-            <span className="idx">{String(i + 1).padStart(2, "0")} / {String(PROCESS.length).padStart(2, "0")}</span>
-            <h3>{p.title}</h3>
-            <p>{p.text}</p>
-          </article>
-        ))}
+        <ul className="stack-list">
+          {items.map((it, i) => (
+            <li className="stack-item" key={it.title} style={{ ["--i" as string]: i }}>
+              <article className="stack-card">
+                <span className="stack-num">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="t-display">{it.title}.</h3>
+                <p className="t-h3">{it.text}</p>
+              </article>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
 }
 
-/* ---------------- Paths ---------------- */
+export function Process() {
+  return <StackCards id="process" heading="How we work." intro="One team from the first conversation to the hundredth order. Four steps, every time." items={PROCESS} />;
+}
 
-export function Paths() {
+/* ---------------- melvo.fun feature ---------------- */
+
+export function FunFeature() {
   return (
-    <section className="section paths container" aria-label="Where to start">
-      <div className="sec-head">
-        <span className="label muted">Two ways in</span>
-        <Reveal as="h2" className="t-display">
-          Where do you <span className="em" style={{ color: "var(--green)" }}>start?</span>
+    <section className="feature" data-theme-section="dark" aria-label="melvo.fun">
+      <div className="page">
+        <Lines as="h2" className="t-display-xl">
+          Learn by building.
+        </Lines>
+        <Reveal>
+          <a href={SITE.funUrl} target="_blank" rel="noopener" className="feature-card">
+            <div className="feature-art" aria-hidden="true">
+              <Mark3D shape="learn" tone="paper" layers={18} follow={false} />
+            </div>
+            <span className="tag tag--haldi">melvo.fun</span>
+            <span className="tag tag--ghost feature-tr">Courses · Workshops · Mentorship</span>
+          </a>
+          <div className="feature-copy">
+            <span className="t-small accent">The learning platform</span>
+            <p className="t-h3">
+              Learn something. Build something. <span className="dim">Robotics, AI, coding and design, taught by making real projects with mentors from industry.</span>
+            </p>
+          </div>
         </Reveal>
       </div>
-      <div className="grid">
-        <TransitionLink href="/contact" className="path" data-cursor="Let's talk">
-          <div className="top">
-            <span className="label">melvo.in</span>
-            <span className="label muted">Businesses · Founders · Institutions</span>
-          </div>
-          <h3>
-            Build the brand, the store and the <span className="em">software.</span>
-          </h3>
-          <ul>
-            <li><span>Brand strategy and identity</span><span className="label muted">Brand</span></li>
-            <li><span>Amazon and storefront setup</span><span className="label muted">Sell</span></li>
-            <li><span>Apps, dashboards and automation</span><span className="label muted">Scale</span></li>
-            <li><span>Training for your team</span><span className="label muted">Learn</span></li>
-          </ul>
-          <span className="go">Start a project <span className="arrow">→</span></span>
+    </section>
+  );
+}
+
+/* ---------------- CTA cards ---------------- */
+
+export function CtaCards() {
+  return (
+    <section className="cta-cards" data-theme-section="dark" aria-label="Next steps">
+      <Reveal className="page cta-grid" stagger={0.12}>
+        <TransitionLink href="/about" className="cta-card cta-card--white">
+          <span className="t-h4 accent">About.</span>
+          <span className="t-display">Meet the team behind it.</span>
+          <span className="circle" aria-hidden="true">
+            →
+          </span>
         </TransitionLink>
-        <a href={SITE.funUrl} target="_blank" rel="noopener" className="path" data-cursor="Open ↗">
-          <div className="top">
-            <span className="fun">melvo<i />fun</span>
-            <span className="label muted">Students · Learners · Schools</span>
-          </div>
-          <h3>
-            Learn something. Build <span className="em">something.</span>
-          </h3>
-          <ul>
-            <li><span>Robotics and electronics</span><span className="label muted">Workshop</span></li>
-            <li><span>AI and machine learning</span><span className="label muted">Course</span></li>
-            <li><span>One-to-one mentorship</span><span className="label muted">Program</span></li>
-            <li><span>Programs for schools and colleges</span><span className="label muted">Institutional</span></li>
-          </ul>
-          <span className="go">Explore melvo.fun <span className="arrow">↗</span></span>
-        </a>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- FAQ ---------------- */
-
-export function Faq() {
-  return (
-    <section className="section faq container" style={{ paddingTop: 0 }} aria-label="Questions">
-      <div className="sec-head">
-        <span className="label muted">Questions</span>
-        <Reveal as="h2" className="t-h2">Good to know.</Reveal>
-      </div>
-      <div className="list">
-        {FAQ.map((f) => (
-          <details key={f.q}>
-            <summary>
-              <h3 className="t-h3">{f.q}</h3>
-              <span className="plus" aria-hidden="true" />
-            </summary>
-            <p className="answer">{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- CTA ---------------- */
-
-export function CtaBand({ title, em }: { title?: string; em?: string }) {
-  return (
-    <section className="cta-band is-dark" data-header="dark" aria-label="Get in touch">
-      <div className="container">
-        <span className="label muted">Next step</span>
-        <Reveal as="h2" className="t-hero">
-          {title ?? "Bring the idea."}
-          <br />
-          <span className="em">{em ?? "We'll bring the rest."}</span>
-        </Reveal>
-        <div className="actions">
-          <Magnetic>
-            <TransitionLink href="/contact" className="btn btn--light">
-              Start a project <span className="arrow">→</span>
-            </TransitionLink>
-          </Magnetic>
-          <Magnetic>
-            <a href={`mailto:${SITE.email}`} className="btn btn--ghost">
-              {SITE.email}
-            </a>
-          </Magnetic>
-        </div>
-      </div>
+        <TransitionLink href="/contact" className="cta-card cta-card--paper">
+          <span className="t-h4 accent">Contact.</span>
+          <span className="t-display">Ready to talk?</span>
+          <span className="circle" aria-hidden="true">
+            →
+          </span>
+        </TransitionLink>
+      </Reveal>
     </section>
   );
 }

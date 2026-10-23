@@ -56,10 +56,10 @@ export function ContactForm() {
   if (status === "done") {
     return (
       <div className="form-done" role="status">
-        <h2 className="t-h2">
-          Got it. <span className="em" style={{ color: "var(--green)" }}>Thank you.</span>
+        <h2 className="t-display">
+          Got it. <span className="accent">Thank you.</span>
         </h2>
-        <p className="t-lead muted">We read every message and will reply by email soon.</p>
+        <p className="t-h3 muted">We read every message and will reply by email soon.</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ export function ContactForm() {
     <form onSubmit={submit} noValidate={false}>
       <div className="form-step">
         <fieldset>
-          <legend className="label">01 / Who are you?</legend>
+          <legend className="t-h4">01 / Who are you?</legend>
           <div className="choices">
             {WHO.map((w, i) => (
               <label className="choice" key={w}>
@@ -81,7 +81,7 @@ export function ContactForm() {
       </div>
       <div className="form-step">
         <fieldset>
-          <legend className="label">02 / What do you need? Pick any.</legend>
+          <legend className="t-h4">02 / What do you need? Pick any.</legend>
           <div className="choices">
             {NEEDS.map((n, i) => (
               <label className="choice" key={n}>
@@ -94,7 +94,7 @@ export function ContactForm() {
       </div>
       <div className="form-step">
         <fieldset>
-          <legend className="label">03 / When?</legend>
+          <legend className="t-h4">03 / When?</legend>
           <div className="choices">
             {TIMES.map((t, i) => (
               <label className="choice" key={t}>
@@ -107,7 +107,7 @@ export function ContactForm() {
       </div>
       <div className="form-step">
         <fieldset>
-          <legend className="label">04 / About you</legend>
+          <legend className="t-h4">04 / About you</legend>
           <div className="fields two">
             <div className="field">
               <label htmlFor="f-name">Name</label>
@@ -140,8 +140,8 @@ export function ContactForm() {
           </p>
         )}
         <div>
-          <button type="submit" className="btn" disabled={status === "sending"}>
-            {status === "sending" ? "Sending…" : "Send"} <span className="arrow">→</span>
+          <button type="submit" className="pill pill--solid pill--lg" disabled={status === "sending"}>
+            <span className="pill-text">{status === "sending" ? "Sending…" : "Send"}</span>
           </button>
         </div>
       </div>

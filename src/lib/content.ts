@@ -172,7 +172,32 @@ export const NAV = [
   { href: "/sell", label: "Sell", shape: "sell" as ShapeName },
   { href: "/scale", label: "Scale", shape: "scale" as ShapeName },
   { href: "/about", label: "About", shape: "m" as ShapeName },
-  { href: "/contact", label: "Contact", shape: "m" as ShapeName },
+];
+
+export const STATEMENT = {
+  lead: "We build things that matter to",
+  words: ["students.", "founders.", "brands.", "schools.", "makers.", "businesses."],
+  body:
+    "Anyone can have an idea. Turning it into a skill, a brand, a store or a product that works is the hard part. It takes learning, design, commerce and technology at one table.",
+};
+
+export const AUDIENCE = [
+  "Students",
+  "Schools",
+  "Colleges",
+  "Professionals",
+  "Founders",
+  "Startups",
+  "D2C brands",
+  "Makers",
+  "Manufacturers",
+  "Retailers",
+  "Exporters",
+  "Institutions",
+  "Enterprises",
+  "Product teams",
+  "Creators",
+  "Small businesses",
 ];
 
 export const SELL_FLOW = [

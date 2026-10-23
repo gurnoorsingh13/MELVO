@@ -33,6 +33,42 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // No preloader: the page is ready as soon as it has mounted and fonts are in.
+  useEffect(() => {
+    const go = () => setReady(true);
+    if (document.fonts) document.fonts.ready.then(go);
+    else go();
+  }, []);
+
+  // Each section names a theme; the page background follows whichever section holds the middle of the screen.
+  useEffect(() => {
+    const body = document.body;
+    const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-theme-section]"));
+    let timer = 0;
+    const set = (theme: string | undefined, animate = true) => {
+      if (!theme || body.dataset.theme === theme) return;
+      if (animate && !prefersReducedMotion()) {
+        body.classList.add("theme-swap");
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => body.classList.remove("theme-swap"), 700);
+      }
+      body.dataset.theme = theme;
+    };
+    set(sections[0]?.dataset.themeSection, false);
+    const triggers = sections.map((s) =>
+      ScrollTrigger.create({
+        trigger: s,
+        start: "top 50%",
+        end: "bottom 50%",
+        onToggle: (self) => self.isActive && set(s.dataset.themeSection),
+      }),
+    );
+    return () => {
+      triggers.forEach((t) => t.kill());
+      window.clearTimeout(timer);
+    };
+  }, [pathname]);
+
   // Smooth scroll, driven by the GSAP ticker so ScrollTrigger stays in sync.
   useEffect(() => {
     if (prefersReducedMotion()) return;
