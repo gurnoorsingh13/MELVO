@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CapHero, CapIntro, Facts, NextCap, SellFlow, ServiceList } from "@/components/capability";
-import { CtaBand } from "@/components/home";
+import { CapHero, CapIntro, Facts, NextCap, SellFlow } from "@/components/capability";
+import { CtaCards, StackCards } from "@/components/home";
 import { CAPABILITIES, capability } from "@/lib/content";
 
 export const dynamicParams = false;
@@ -25,11 +25,11 @@ export default async function CapabilityPage({ params }: { params: Promise<{ slu
     <>
       <CapHero cap={cap} />
       <CapIntro cap={cap} />
-      <ServiceList cap={cap} />
+      <StackCards heading="What we do." intro={cap.summary} items={cap.services} />
       {cap.slug === "sell" && <SellFlow />}
       <Facts cap={cap} />
       <NextCap cap={cap} />
-      <CtaBand title="Thought of it?" em="Let's build it." />
+      <CtaCards />
     </>
   );
 }

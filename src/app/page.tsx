@@ -1,27 +1,16 @@
-import { Capabilities, CtaBand, Faq, Hero, Intro, Paths, Process, Ways } from "@/components/home";
-import { Marquee } from "@/components/motion";
+import { AudienceWall, CapabilityRail, CtaCards, FunFeature, Hero, Process, Statement, WaysArc } from "@/components/home";
 
 export default function Home() {
   return (
     <>
       <Hero />
-      <Intro />
-      <Capabilities />
-      <Ways />
-      <Marquee
-        items={[
-          <>Seekho.</>,
-          <>Banao.</>,
-          <>Becho.</>,
-          <>
-            <span className="em">Badhao.</span>
-          </>,
-        ]}
-      />
+      <Statement />
+      <AudienceWall />
+      <CapabilityRail />
+      <WaysArc />
       <Process />
-      <Paths />
-      <Faq />
-      <CtaBand />
+      <FunFeature />
+      <CtaCards />
     </>
   );
 }

@@ -1,40 +1,43 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { gsap, prefersReducedMotion } from "@/lib/gsap";
 import { CAPABILITIES, SELL_FLOW, type Capability } from "@/lib/content";
-import type { ShapeName } from "@/lib/shapes";
 import { Mark } from "./Mark";
-import { Reveal, Rise, ScrubText } from "./motion";
-import { useSite } from "./providers";
+import { Mark3D } from "./Mark3D";
+import { Lines, Reveal, ScrubText } from "./motion";
 import { TransitionLink } from "./TransitionLink";
 
 export function CapHero({ cap }: { cap: Capability }) {
-  const { ready } = useSite();
-  const [shape, setShape] = useState<ShapeName>("m");
+  const root = useRef<HTMLElement>(null);
   useEffect(() => {
-    if (!ready) return;
-    const t = window.setTimeout(() => setShape(cap.shape), 900);
-    return () => window.clearTimeout(t);
-  }, [ready, cap.shape]);
+    const el = root.current;
+    if (!el || prefersReducedMotion()) return;
+    const ctx = gsap.context(() => {
+      gsap.from(".cap-object", { scale: 0.6, autoAlpha: 0, duration: 1.6, ease: "melvo", delay: 0.1 });
+      gsap.to(".cap-object", { yPercent: -16, ease: "none", scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: true } });
+    }, el);
+    return () => ctx.revert();
+  }, []);
   return (
-    <section className="cap-hero container">
-      <div className="meta">
-        <span className="label muted">
-          {cap.index} / {cap.name}
-        </span>
-        <span className="label muted">Capability</span>
+    <section className="cap-hero" ref={root} data-theme-section="white">
+      <div className="cap-object">
+        <Mark3D shape={cap.shape} tone="green" />
       </div>
-      <Reveal as="h1" className="verb" trigger="ready">
-        {cap.verb}
-        <span className="dot" />
-      </Reveal>
-      <div className="bottom">
-        <Reveal as="h2" className="t-h2" trigger="ready" delay={0.25}>
-          {cap.headline} <span className="em">{cap.headlineEm}</span>
+      <div className="page cap-hero-copy">
+        <Reveal trigger="ready" className="cap-meta">
+          <span className="tag tag--light">{cap.index}</span>
+          <span className="t-small muted">{cap.name}</span>
         </Reveal>
-        <p className="t-lead muted">{cap.summary}</p>
-        <Mark shape={shape} title={`${cap.verb} shape`} />
+        <Lines as="h1" className="t-giant" trigger="ready" delay={0.15}>
+          {cap.verb}
+          <span className="dot" />
+        </Lines>
+        <Reveal trigger="ready" delay={0.45}>
+          <p className="t-h2 cap-headline">
+            {cap.headline} <span className="accent">{cap.headlineEm}</span>
+          </p>
+        </Reveal>
       </div>
     </section>
   );
@@ -42,57 +45,30 @@ export function CapHero({ cap }: { cap: Capability }) {
 
 export function CapIntro({ cap }: { cap: Capability }) {
   return (
-    <section className="section container intro">
-      <div className="meta">
-        <span className="label muted">What it means</span>
+    <section className="cap-intro" data-theme-section="white">
+      <div className="page">
+        <ScrubText className="t-statement">{cap.intro}</ScrubText>
       </div>
-      <ScrubText className="t-statement">{cap.intro}</ScrubText>
     </section>
   );
 }
 
-export function ServiceList({ cap }: { cap: Capability }) {
-  const follow = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = follow.current;
-    if (!el || prefersReducedMotion() || !window.matchMedia("(pointer: fine)").matches) return;
-    const xTo = gsap.quickTo(el, "left", { duration: 0.6, ease: "power3.out" });
-    const yTo = gsap.quickTo(el, "top", { duration: 0.6, ease: "power3.out" });
-    const move = (e: PointerEvent) => {
-      xTo(e.clientX + 150);
-      yTo(e.clientY);
-    };
-    window.addEventListener("pointermove", move);
-    return () => window.removeEventListener("pointermove", move);
-  }, []);
-  const on = (v: boolean) => follow.current?.classList.toggle("on", v);
+export function SellFlow() {
   return (
-    <section className="section container" style={{ paddingTop: 0 }} aria-label="Services">
-      <div className="sec-head">
-        <span className="label muted">Services</span>
-        <Reveal as="h2" className="t-display">
-          What we <span className="em" style={{ color: "var(--green)" }}>do.</span>
-        </Reveal>
-      </div>
-      <div className="svc" onPointerLeave={() => on(false)}>
-        <ul>
-          {cap.services.map((s, i) => (
-            <li key={s.title}>
-              <Rise className="row">
-                <span className="label muted" onPointerEnter={() => on(true)}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="t-h3" onPointerEnter={() => on(true)}>
-                  {s.title}
-                </h3>
-                <p onPointerEnter={() => on(true)}>{s.text}</p>
-              </Rise>
-            </li>
+    <section className="flow" data-theme-section="white" aria-label="How a product moves">
+      <div className="page">
+        <Lines as="h2" className="t-display-xl">
+          Shelf to sold.
+        </Lines>
+        <Reveal className="flow-grid" stagger={0.08}>
+          {SELL_FLOW.map((s, i) => (
+            <div className="flow-step" key={s.t}>
+              <span className="stack-num">{String(i + 1).padStart(2, "0")}</span>
+              <b className="t-h3">{s.t}.</b>
+              <span className="muted">{s.d}</span>
+            </div>
           ))}
-        </ul>
-      </div>
-      <div className="svc-follow" ref={follow} aria-hidden="true">
-        <Mark shape={cap.shape} tone="dark" />
+        </Reveal>
       </div>
     </section>
   );
@@ -100,59 +76,33 @@ export function ServiceList({ cap }: { cap: Capability }) {
 
 export function Facts({ cap }: { cap: Capability }) {
   return (
-    <section className="section is-dark" data-header="dark" aria-label="Who it is for">
-      <div className="container">
-        <div className="sec-head">
-          <span className="label muted">At a glance</span>
-          <Reveal as="h2" className="t-display">
-            Made for people who want to <span className="em" style={{ color: "var(--firozi)" }}>move.</span>
-          </Reveal>
-        </div>
-        <div className="facts">
-          <div>
-            <span className="label muted">Who it is for</span>
-            <ul>{cap.audience.map((a) => <li key={a}>{a}</li>)}</ul>
+    <section className="facts" data-theme-section="white" aria-label="Who it is for">
+      <div className="page">
+        <Lines as="h2" className="t-display-xl">
+          Made for movers.
+        </Lines>
+        <Reveal className="facts-grid" stagger={0.12}>
+          <div className="facts-card">
+            <span className="t-h4 accent">Who it is for.</span>
+            <ul>
+              {cap.audience.map((a) => (
+                <li key={a} className="t-h3">
+                  {a}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div>
-            <span className="label muted">What you get</span>
-            <ul>{cap.outcomes.map((a) => <li key={a}>{a}</li>)}</ul>
+          <div className="facts-card">
+            <span className="t-h4 accent">What you get.</span>
+            <ul>
+              {cap.outcomes.map((a) => (
+                <li key={a} className="t-h3">
+                  {a}
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export function SellFlow() {
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = root.current;
-    if (!el || prefersReducedMotion()) return;
-    const ctx = gsap.context(() => {
-      gsap.from(".step", { y: 50, autoAlpha: 0, stagger: 0.12, duration: 1.1, ease: "expo.out", scrollTrigger: { trigger: el, start: "top 80%", once: true } });
-    }, el);
-    return () => ctx.revert();
-  }, []);
-  return (
-    <section className="section container" aria-label="How a product moves">
-      <div className="sec-head">
-        <span className="label muted">How a product moves</span>
-        <Reveal as="h2" className="t-display">
-          Six steps from shelf to <span className="em" style={{ color: "var(--green)" }}>sold.</span>
         </Reveal>
-      </div>
-      <div className="flow" ref={root}>
-        {SELL_FLOW.map((s, i) => (
-          <div className="step" key={s.t}>
-            <span className="label">
-              {String(i + 1).padStart(2, "0")} <i>{i === SELL_FLOW.length - 1 ? "■" : "→"}</i>
-            </span>
-            <div>
-              <b>{s.t}</b>
-              <span>{s.d}</span>
-            </div>
-          </div>
-        ))}
       </div>
     </section>
   );
@@ -162,14 +112,20 @@ export function NextCap({ cap }: { cap: Capability }) {
   const i = CAPABILITIES.findIndex((c) => c.slug === cap.slug);
   const next = CAPABILITIES[(i + 1) % CAPABILITIES.length];
   return (
-    <TransitionLink href={`/${next.slug}`} className="next-cap container" data-cursor="Next">
-      <span className="label muted">
-        Next capability · {next.index} / {next.name}
-      </span>
-      <span className="big">
-        {next.verb}
-        <span className="arrow">→</span>
-      </span>
-    </TransitionLink>
+    <section className="next-cap" data-theme-section="dark" aria-label="Next capability">
+      <div className="page">
+        <TransitionLink href={`/${next.slug}`} className="next-card">
+          <span className="t-small">Next · {next.index} · {next.name}</span>
+          <span className="t-giant">
+            {next.verb}
+            <span className="dot" />
+          </span>
+          <Mark shape={next.shape} tone="dark" className="next-mark" />
+          <span className="circle" aria-hidden="true">
+            →
+          </span>
+        </TransitionLink>
+      </div>
+    </section>
   );
 }

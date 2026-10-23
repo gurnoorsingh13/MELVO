@@ -28,8 +28,12 @@ npm run typecheck
 | `src/app/api/contact/route.ts` | Contact form endpoint |
 | `src/lib/content.ts` | All site copy |
 | `src/lib/logo.ts`, `src/lib/shapes.ts` | Logo and mark geometry, generated from `brand/` |
-| `src/components/chrome.tsx` | Preloader, page curtain, cursor, header, menu, footer |
-| `src/components/motion.tsx` | Line reveals, scroll-scrubbed text, marquee, magnetic buttons |
+| `src/components/chrome.tsx` | Page curtain, header, edge blur, mobile menu, floating card, footer |
+| `src/components/motion.tsx` | Reveals, line reveals, rotating words, scroll-scrubbed text, shape trail |
+| `src/components/Mark3D.tsx` | The mark as an extruded 3D object |
+| `src/components/home.tsx` | Hero, statement, audience wall, capability rail, ways arc, stacking cards, CTAs |
+
+Each section declares `data-theme-section` (`white` or `dark`); the page background swaps to match the section in the middle of the screen.
 
 ### Contact form
 
